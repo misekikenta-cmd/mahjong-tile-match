@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0a2a1e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>麻雀神経衰弱・三枚合わせ</title>
+<style>
+:root{
+  --felt-1:#1c6a4b;
+  --felt-2:#08201a;
+  --gold:#e8c46a;
+  --gold-2:#b8933f;
+  --ivory:#fdf8ea;
+  --ink:#12386b;
+  --red:#b3271f;
+  --radius:10px;
+  --shadow:0 8px 20px rgba(0,0,0,.38);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;min-height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP","Meiryo",sans-serif;
+  color:#f2f7f2;
+  background:
+    radial-gradient(ellipse at 50% -10%, #22795a 0%, #12452f 42%, #061914 100%) fixed;
+  min-height:100vh;
+  -webkit-user-select:none;user-select:none;
+  touch-action:manipulation;
+  overscroll-behavior-y:none;
+  -webkit-font-smoothing:antialiased;
+}
+.hidden{display:none !important}
+
+/* ---------- screens ---------- */
+.screen{display:none;padding:16px 14px 48px;max-width:840px;margin:0 auto}
+.screen.active{display:block}
+#screen-game{padding:6px 6px 40px;max-width:900px}
+.screen-title{
+  font-size:19px;font-weight:700;margin:6px 0 16px;letter-spacing:.04em;
+  text-align:center;color:var(--gold);
+}
+
+/* ---------- brand ---------- */
+.brand{text-align:center;padding:22px 0 6px}
+.brand-tiles{display:flex;justify-content:center;gap:7px;margin-bottom:14px}
+.brand-tiles .bt{
+  width:38px;height:50px;border-radius:7px;
+  background:linear-gradient(170deg,#fffdf6,#efe4c8);
+  color:var(--ink);font-size:24px;font-weight:700;line-height:50px;
+  font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+  box-shadow:0 4px 10px rgba(0,0,0,.35), inset 0 0 0 1.5px rgba(0,0,0,.12);
+}
+.brand h1{
+  font-size:26px;margin:0 0 4px;letter-spacing:.06em;
+  background:linear-gradient(180deg,#fff6d8,#e0b95c);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  font-weight:800;
+}
+.brand-sub{margin:0;font-size:13px;color:#bfe0cd;letter-spacing:.12em}
+
+/* ---------- card ---------- */
+.card{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;
+  padding:14px;
+  margin:14px 0;
+  backdrop-filter:blur(4px);
+}
+.row-label{font-size:12.5px;color:#a9cdb9;letter-spacing:.08em;margin-bottom:9px}
+.row-label span{color:var(--gold);font-weight:700}
+
+/* ---------- segmented ---------- */
+.seg{display:flex;gap:6px;background:rgba(0,0,0,.24);border-radius:11px;padding:4px}
+.seg button{
+  flex:1;border:0;background:transparent;color:#cfe6d8;
+  font-size:13px;font-weight:600;padding:10px 4px;border-radius:8px;
+  cursor:pointer;font-family:inherit;transition:.18s;
+}
+.seg button.active{
+  background:linear-gradient(180deg,#2f9b6e,#1b6b4a);
+  color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3);
+}
+.diff-info{text-align:center;font-size:12px;color:#9dc6b1;margin-top:9px;letter-spacing:.06em}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:block;width:100%;border:0;border-radius:12px;
+  padding:15px 14px;font-size:15px;font-weight:700;font-family:inherit;
+  background:linear-gradient(180deg,#2b7f5c,#185440);
+  color:#fff;cursor:pointer;letter-spacing:.03em;
+  box-shadow:0 4px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.14);
+  transition:transform .08s, filter .15s;
+  margin-top:10px;
+}
+.btn:active{transform:translateY(1px) scale(.995);filter:brightness(1.08)}
+.btn.primary{
+  background:linear-gradient(180deg,#f0d27a,#c9a03f);
+  color:#3a2a06;box-shadow:0 5px 14px rgba(232,196,106,.28), inset 0 1px 0 rgba(255,255,255,.5);
+}
+.btn.ghost{
+  background:transparent;border:1.5px solid rgba(255,255,255,.22);
+  color:#cfe6d8;box-shadow:none;
+}
+.btn:disabled{opacity:.4;filter:grayscale(.5);cursor:not-allowed}
+.btn.big{padding:26px 10px;font-size:19px}
+.btn .bi{margin-right:7px}
+.menu-buttons{margin-top:6px}
+
+/* ---------- rules ---------- */
+.rules{margin-top:20px;background:rgba(0,0,0,.18);border-radius:12px;padding:0 14px}
+.rules summary{padding:13px 0;font-size:13.5px;color:var(--gold);cursor:pointer;font-weight:700;letter-spacing:.05em}
+.rules ul{margin:0 0 14px;padding-left:19px;font-size:13px;line-height:1.85;color:#d5e9dd}
+.rules b{color:#fff}
+
+/* ---------- players count ---------- */
+.count-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:8px}
+.hint{font-size:12.5px;color:#9dc6b1;line-height:1.7;text-align:center;margin:14px 0 0}
+.back{margin-top:22px}
+
+/* ---------- lobby ---------- */
+.field{display:block;margin-bottom:2px}
+.field span{display:block;font-size:12.5px;color:#a9cdb9;margin-bottom:7px;letter-spacing:.06em}
+.field input{
+  width:100%;padding:12px 13px;border-radius:10px;border:1.5px solid rgba(255,255,255,.16);
+  background:rgba(0,0,0,.28);color:#fff;font-size:16px;font-family:inherit;outline:none;
+}
+.field input:focus{border-color:var(--gold)}
+.join-row{display:flex;gap:8px;margin-top:10px}
+.join-row input{
+  flex:1;padding:14px 13px;border-radius:11px;border:1.5px solid rgba(255,255,255,.16);
+  background:rgba(0,0,0,.28);color:#fff;font-size:20px;font-weight:800;letter-spacing:.28em;
+  text-align:center;text-transform:uppercase;font-family:ui-monospace,Menlo,monospace;outline:none;
+}
+.join-row input:focus{border-color:var(--gold)}
+.join-row .btn{width:auto;flex:0 0 104px;margin-top:0;padding:14px 10px}
+.room-box{
+  background:rgba(0,0,0,.24);border-radius:14px;padding:18px 14px;text-align:center;margin-bottom:16px;
+}
+.room-label{font-size:12px;color:#a9cdb9;letter-spacing:.14em}
+.room-code{
+  font-size:46px;font-weight:900;letter-spacing:.16em;color:var(--gold);
+  font-family:ui-monospace,Menlo,monospace;line-height:1.15;margin:4px 0 12px;
+  text-shadow:0 3px 12px rgba(232,196,106,.35);
+}
+.qr{display:inline-block;background:#fff;padding:9px;border-radius:10px;line-height:0;min-height:0}
+.qr:empty{display:none}
+.qr img,.qr canvas{display:block;width:150px;height:150px}
+.lobby-players{margin:10px 0 4px}
+.lp{
+  display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:10px;
+  background:rgba(255,255,255,.07);margin-bottom:7px;font-size:14.5px;
+}
+.lp em{font-style:normal;font-size:11.5px;color:var(--gold);opacity:.9}
+.lp-i{
+  width:22px;height:22px;border-radius:50%;background:rgba(232,196,106,.2);
+  color:var(--gold);font-size:12px;font-weight:700;line-height:22px;text-align:center;flex:0 0 22px;
+}
+.wait-box{text-align:center;padding:26px 0 18px}
+.wait-box p{font-size:13.5px;color:#bfe0cd}
+.spinner{
+  width:34px;height:34px;margin:0 auto 14px;border-radius:50%;
+  border:3px solid rgba(255,255,255,.15);border-top-color:var(--gold);
+  animation:spin .9s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.status-line{font-size:12.5px;color:#ffb3a7;text-align:center;min-height:18px;margin-top:12px;line-height:1.6}
+
+/* ---------- game HUD ---------- */
+#hud{
+  position:sticky;top:0;z-index:20;
+  background:linear-gradient(180deg,rgba(6,25,20,.96),rgba(6,25,20,.82));
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  padding:8px 8px 10px;margin:-6px -6px 10px;
+  border-radius:0 0 14px 14px;
+}
+.hud-top{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.icon-btn{
+  width:36px;height:36px;flex:0 0 36px;border-radius:10px;border:1.5px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.07);color:#e7f3ec;font-size:17px;line-height:1;
+  cursor:pointer;font-family:inherit;padding:0;
+}
+.icon-btn:active{background:rgba(255,255,255,.16)}
+.turn-label{
+  flex:1;text-align:center;font-size:13.5px;font-weight:700;color:var(--gold);
+  letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.players{display:flex;gap:6px;overflow-x:auto;padding-bottom:1px}
+.players::-webkit-scrollbar{display:none}
+.pchip{
+  flex:1 0 auto;min-width:74px;display:flex;flex-direction:column;align-items:center;
+  padding:7px 9px;border-radius:10px;background:rgba(255,255,255,.06);
+  border:1.5px solid transparent;transition:.2s;
+}
+.pchip.active{
+  background:linear-gradient(180deg,rgba(232,196,106,.22),rgba(232,196,106,.08));
+  border-color:var(--gold);
+  box-shadow:0 0 14px rgba(232,196,106,.25);
+}
+.pname{font-size:11.5px;color:#d9ece1;max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pchip.active .pname{color:#fff;font-weight:700}
+.pscore{font-size:17px;font-weight:800;color:var(--gold);line-height:1.15}
+.pscore i{font-style:normal;font-size:9.5px;color:#9dc6b1;margin-left:3px;font-weight:600}
+
+/* ---------- board ---------- */
+#board{
+  display:grid;gap:clamp(4px,1.3vw,9px);
+  width:100%;max-width:780px;margin:0 auto;
+  padding:0 4px;
+}
+.tile{
+  position:relative;aspect-ratio:3/4;perspective:800px;cursor:pointer;
+  touch-action:manipulation;
+}
+.tile-inner{
+  position:relative;width:100%;height:100%;
+  transform-style:preserve-3d;
+  transition:transform .34s cubic-bezier(.4,.1,.2,1);
+}
+.tile.up .tile-inner{transform:rotateY(180deg)}
+.tile-back,.tile-front{
+  position:absolute;inset:0;border-radius:var(--radius);
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;
+}
+.tile-back{
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.055) 0 5px, transparent 5px 10px),
+    linear-gradient(158deg,#33936a 0%,#1b6b4a 48%,#0f4630 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(232,196,106,.30),
+    inset 0 -4px 10px rgba(0,0,0,.40),
+    0 3px 8px rgba(0,0,0,.35);
+}
+.tile-back::after{
+  content:"";
+  position:absolute;left:50%;top:50%;width:34%;aspect-ratio:1;
+  transform:translate(-50%,-50%) rotate(45deg);
+  border:2px solid rgba(232,196,106,.42);border-radius:3px;
+}
+.tile-front{
+  background:linear-gradient(168deg,#fffef8 0%,#f6efd9 55%,#ece0c0 100%);
+  box-shadow:
+    inset 0 0 0 1.5px rgba(0,0,0,.13),
+    inset 0 -5px 9px rgba(0,0,0,.10),
+    0 3px 8px rgba(0,0,0,.28);
+  display:flex;align-items:center;justify-content:center;
+  padding:5%;
+  transform:rotateY(180deg);
+}
+.tile-front svg{width:100%;height:100%;display:block}
+.tile.matched .tile-front{opacity:.4;filter:saturate(.45) brightness(1.04)}
+.tile.matched::after{
+  content:"✓";position:absolute;right:3px;top:1px;z-index:5;
+  color:var(--gold);font-size:13px;font-weight:900;
+  text-shadow:0 1px 4px rgba(0,0,0,.7);
+}
+.tile.matched{cursor:default}
+.tile:not(.up):not(.matched):active .tile-inner{transform:scale(.94)}
+
+/* ---------- overlay ---------- */
+.overlay{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(3,14,10,.82);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;padding:22px;
+  animation:fade .22s ease;
+}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.panel{
+  width:100%;max-width:400px;border-radius:20px;padding:24px 20px 20px;
+  background:linear-gradient(180deg,#144532,#0a2a1f);
+  border:1.5px solid rgba(232,196,106,.34);
+  box-shadow:var(--shadow);
+  text-align:center;
+  animation:pop .3s cubic-bezier(.2,1.3,.5,1);
+}
+@keyframes pop{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
+.panel h2{margin:0 0 16px;font-size:21px;color:var(--gold);letter-spacing:.05em}
+.panel .big{font-size:52px;font-weight:900;color:#fff;margin:0;line-height:1.05}
+.panel .big span{font-size:16px;color:var(--gold);font-weight:700;margin-left:6px}
+.panel .sub{font-size:13px;color:#a9cdb9;margin:12px 0 0;letter-spacing:.04em}
+.rank{list-style:none;margin:0;padding:0;text-align:left}
+.rank li{
+  display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:11px;
+  background:rgba(255,255,255,.06);margin-bottom:7px;font-size:14.5px;
+}
+.rank li.win{background:linear-gradient(90deg,rgba(232,196,106,.24),rgba(232,196,106,.07));border:1px solid rgba(232,196,106,.5)}
+.rank .rk{width:22px;height:22px;border-radius:50%;background:rgba(232,196,106,.22);color:var(--gold);font-size:12px;font-weight:800;line-height:22px;text-align:center;flex:0 0 22px}
+.rank .rn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank .rs{color:var(--gold);font-weight:800;font-size:13.5px}
+.ov-actions{margin-top:20px}
+.ov-actions .btn{margin-top:9px}
+
+/* ---------- toast ---------- */
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+  background:rgba(8,30,22,.95);border:1px solid rgba(232,196,106,.4);
+  color:#fff;padding:11px 18px;border-radius:24px;font-size:13px;z-index:200;
+  box-shadow:var(--shadow);max-width:88vw;text-align:center;line-height:1.5;
+  animation:fade .2s ease;
+}
+
+@media (min-width:620px){
+  .brand h1{font-size:31px}
+  .count-grid{grid-template-columns:repeat(3,1fr)}
+  #board{max-width:760px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <section id="screen-menu" class="screen active">
+    <div class="brand">
+      <div class="brand-tiles">
+        <span class="bt">東</span><span class="bt">東</span><span class="bt">東</span>
+      </div>
+      <h1>麻雀神経衰弱</h1>
+      <p class="brand-sub">三枚合わせ ― 刻子をそろえろ</p>
+    </div>
+
+    <div class="card">
+      <div class="row-label">難易度</div>
+      <div class="seg" id="diff-seg">
+        <button data-diff="easy" class="active">かんたん</button>
+        <button data-diff="normal">ふつう</button>
+        <button data-diff="hard">むずかしい</button>
+      </div>
+      <div class="diff-info" id="diff-info">24枚 ／ 8種類</div>
+    </div>
+
+    <div class="menu-buttons">
+      <button class="btn primary" data-mode="solo"><span class="bi">🀄</span>ひとりで遊ぶ</button>
+      <button class="btn" data-mode="local"><span class="bi">👥</span>同じ端末で対戦</button>
+      <button class="btn" data-mode="online"><span class="bi">📱</span>オンライン対戦（複数スマホ）</button>
+    </div>
+
+    <details class="rules">
+      <summary>遊び方</summary>
+      <ul>
+        <li>牌をめくって、<b>同じ柄を3枚</b>そろえると「刻子」が成立し、獲得できます。</li>
+        <li>3枚のうち1枚でも違う柄なら、少し見せたあと裏返して手番が移ります。</li>
+        <li>3枚そろえると、そのまま続けてめくれます。</li>
+        <li>すべての牌がなくなったら終了。刻子の数が多い人の勝ちです。</li>
+      </ul>
+    </details>
+  </section>
+
+  <section id="screen-players" class="screen">
+    <h2 class="screen-title">人数を選択</h2>
+    <div class="count-grid">
+      <button class="btn big" data-count="2">2人</button>
+      <button class="btn big" data-count="3">3人</button>
+      <button class="btn big" data-count="4">4人</button>
+    </div>
+    <p class="hint">同じ端末を順番にまわして遊びます。</p>
+    <button class="btn ghost back" data-back="menu">戻る</button>
+  </section>
+
+  <section id="screen-lobby" class="screen">
+    <h2 class="screen-title">オンライン対戦</h2>
+
+    <div class="card">
+      <label class="field">
+        <span>あなたの名前</span>
+        <input id="inp-name" maxlength="8" placeholder="プレイヤー" autocomplete="off">
+      </label>
+    </div>
+
+    <div id="lobby-choice">
+      <button class="btn primary" id="btn-host">ルームを作る（ホスト）</button>
+      <div class="join-row">
+        <input id="inp-code" maxlength="4" placeholder="ID" autocomplete="off" autocapitalize="characters" spellcheck="false">
+        <button class="btn" id="btn-join">参加</button>
+      </div>
+      <p class="hint">同じWi-FiでなくてもOK。ホストが表示する4文字のIDを入力してください。</p>
+    </div>
+
+    <div id="lobby-room" class="hidden">
+      <div class="room-box">
+        <div class="room-label">ルームID</div>
+        <div class="room-code" id="room-code">----</div>
+        <div class="qr" id="qr"></div>
+        <p class="hint">他のスマホでこのページを開き、上のIDを入力。</p>
+      </div>
+      <div class="row-label">参加者 <span id="lobby-count">1</span> / 4</div>
+      <div class="lobby-players" id="lobby-players"></div>
+      <button class="btn primary" id="btn-start" disabled>ゲーム開始</button>
+      <p class="hint" id="host-note">2人以上で開始できます。</p>
+    </div>
+
+    <div id="lobby-wait" class="hidden">
+      <div class="wait-box">
+        <div class="spinner"></div>
+        <p>ホストがゲームを開始するのを待っています…</p>
+      </div>
+      <div class="row-label">参加者 <span id="join-count">1</span> / 4</div>
+      <div class="lobby-players" id="join-players"></div>
+    </div>
+
+    <div class="status-line" id="lobby-status"></div>
+    <button class="btn ghost back" data-back="menu">戻る</button>
+  </section>
+
+  <section id="screen-game" class="screen">
+    <header id="hud">
+      <div class="hud-top">
+        <button class="icon-btn" id="btn-quit" title="メニュー">✕</button>
+        <div class="turn-label" id="turn-label">…</div>
+        <button class="icon-btn" id="btn-restart" title="やり直す">↻</button>
+      </div>
+      <div class="players" id="players"></div>
+    </header>
+    <div id="board"></div>
+  </section>
+
+</div>
+
+<div id="overlay" class="overlay hidden">
+  <div class="panel">
+    <h2 id="ov-title">ゲーム終了</h2>
+    <div id="ov-body"></div>
+    <div class="ov-actions">
+      <button class="btn primary" id="ov-again">もう一度</button>
+      <button class="btn ghost" id="ov-menu">メニューへ</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+/* ============================================================
+   麻雀神経衰弱・三枚合わせ  ―  ゲームエンジン（純ロジック）
+   ブラウザ（window.MJEngine）と Node（module.exports）の両方で使える
+   ============================================================ */
+(function (root, factory) {
+  if (typeof module !== 'undefined' && module.exports) { module.exports = factory(); }
+  else { root.MJEngine = factory(); }
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  var COPIES = 3;                                   // 1種類につき3枚（刻子）
+  var KANJI = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  var KINDS = [];
+  var KIND_MAP = {};
+
+  (function build() {
+    var i;
+    for (i = 1; i <= 9; i++) { KINDS.push({ id: 'm' + i, suit: 'man', num: i, name: KANJI[i - 1] + '萬' }); }
+    for (i = 1; i <= 9; i++) { KINDS.push({ id: 'p' + i, suit: 'pin', num: i, name: i + '筒' }); }
+    for (i = 1; i <= 9; i++) { KINDS.push({ id: 's' + i, suit: 'sou', num: i, name: i + '索' }); }
+    ['東', '南', '西', '北', '白', '發', '中'].forEach(function (c, j) {
+      KINDS.push({ id: 'z' + j, suit: 'honor', num: j, name: c });
+    });
+    KINDS.forEach(function (k) { KIND_MAP[k.id] = k; });
+  })();
+
+  function shuffle(a, rnd) {
+    rnd = rnd || Math.random;
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(rnd() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function pickKinds(n, rnd) { return shuffle(KINDS.slice(), rnd).slice(0, n); }
+
+  function buildDeck(kinds, rnd) {
+    var deck = [];
+    kinds.forEach(function (k) { for (var c = 0; c < COPIES; c++) { deck.push(k.id); } });
+    return shuffle(deck, rnd);
+  }
+
+  /* ---------------- Engine ---------------- */
+  function Engine(opts) {
+    opts = opts || {};
+    this.rnd = opts.rnd || Math.random;
+    this.nPlayers = Math.max(1, opts.nPlayers || 1);
+
+    if (opts.deck) {
+      this.deck = opts.deck.slice();
+      var seen = {}, ids = [];
+      this.deck.forEach(function (id) { if (!seen[id]) { seen[id] = 1; ids.push(id); } });
+      this.kindList = ids.map(function (id) { return KIND_MAP[id] || { id: id, suit: 'man', num: 1, name: id }; });
+    } else {
+      this.kindList = opts.kinds || pickKinds(opts.nKinds || 8, this.rnd);
+      this.deck = buildDeck(this.kindList, this.rnd);
+    }
+
+    this.total = this.deck.length;
+    this.matched = new Array(this.total).fill(false);
+    this.scores = new Array(this.nPlayers).fill(0);
+    this.turn = 0;
+    this.flipped = [];
+    this.pendingFail = null;
+    this.over = false;
+    this.tripletsLeft = this.kindList.length;
+    this.matchCount = 0;
+  }
+
+  /* 1枚めくる。戻り値の type:
+     first / second / match / fail / ignore */
+  Engine.prototype.flip = function (i) {
+    if (this.over) return { type: 'ignore', reason: 'over' };
+    if (this.pendingFail) return { type: 'ignore', reason: 'resolving' };
+    if (typeof i !== 'number' || i < 0 || i >= this.total) return { type: 'ignore', reason: 'range' };
+    if (this.matched[i]) return { type: 'ignore', reason: 'matched' };
+    if (this.flipped.indexOf(i) !== -1) return { type: 'ignore', reason: 'already' };
+    if (this.flipped.length >= 3) return { type: 'ignore', reason: 'full' };
+
+    this.flipped.push(i);
+    var L = this.flipped.length;
+    if (L === 1) return { type: 'first', idx: i, player: this.turn };
+
+    var first = this.deck[this.flipped[0]];
+
+    /* 2枚目で柄が違えば、その時点で失敗（3枚目はめくれない） */
+    if (this.deck[i] !== first) {
+      this.pendingFail = this.flipped.slice();
+      return { type: 'fail', indices: this.flipped.slice(), flips: L, player: this.turn };
+    }
+
+    if (L === 2) return { type: 'second', idx: i, player: this.turn };
+
+    /* 3枚そろった＝刻子成立 */
+    var idxs = this.flipped.slice();
+    var self = this;
+    idxs.forEach(function (k) { self.matched[k] = true; });
+    this.scores[this.turn] += 1;
+    this.matchCount += 1;
+    this.tripletsLeft -= 1;
+    this.flipped = [];
+    if (this.tripletsLeft === 0) { this.over = true; }
+    return { type: 'match', indices: idxs, player: this.turn, over: this.over };
+  };
+
+  /* 失敗した牌を伏せて手番を次へ（演出後に呼ぶ） */
+  Engine.prototype.resolve = function () {
+    if (!this.pendingFail) return null;
+    var idx = this.pendingFail;
+    this.pendingFail = null;
+    this.flipped = [];
+    this.turn = (this.turn + 1) % this.nPlayers;
+    return { cleared: idx, turn: this.turn };
+  };
+
+  return {
+    KINDS: KINDS,
+    KIND_MAP: KIND_MAP,
+    COPIES: COPIES,
+    shuffle: shuffle,
+    pickKinds: pickKinds,
+    buildDeck: buildDeck,
+    Engine: Engine
+  };
+});
+
+</script>
+<script>
+/* ============================================================
+   UI / ローカル対戦ロジック
+   （engine_core.js の後に読み込まれ、同じスコープを共有する）
+   ============================================================ */
+'use strict';
+
+var E = window.MJEngine;
+var KM = E.KIND_MAP;
+
+var DIFFS = {
+  easy:   { nKinds: 8,  label: '24枚 ／ 8種類' },
+  normal: { nKinds: 12, label: '36枚 ／ 12種類' },
+  hard:   { nKinds: 16, label: '48枚 ／ 16種類' }
+};
+
+var FAIL_DELAY  = 1000;
+var MATCH_DELAY = 450;
+var TOAST_MS    = 1400;
+
+var G = {
+  mode: 'solo',
+  diff: 'easy',
+  engine: null,
+  vm: null,
+  lock: false,
+  names: ['あなた'],
+  myIndex: 0,
+  online: false,
+  isHost: false,
+  code: '',
+  started: false,
+  resultShown: false,
+  timers: []
+};
+
+/* ---------- helpers ---------- */
+function $(s) { return document.querySelector(s); }
+function $all(s) { return Array.prototype.slice.call(document.querySelectorAll(s)); }
+function later(fn, ms) { var id = setTimeout(fn, ms); G.timers.push(id); return id; }
+function clearTimers() { G.timers.forEach(clearTimeout); G.timers = []; }
+function showScreen(name) {
+  $all('.screen').forEach(function (el) { el.classList.remove('active'); });
+  var el = $('#screen-' + name);
+  if (el) { el.classList.add('active'); }
+  if (name !== 'game') { window.scrollTo(0, 0); }
+}
+function showToast(msg, ms) {
+  var t = $('#toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(function () { t.classList.add('hidden'); }, ms || TOAST_MS);
+}
+function showOverlay() { $('#overlay').classList.remove('hidden'); }
+function hideOverlay() { $('#overlay').classList.add('hidden'); }
+
+function colsForTotal(total) {
+  var wide = window.innerWidth >= 640;
+  if (total <= 24) { return wide ? 8 : 6; }
+  if (total <= 36) { return wide ? 9 : 6; }
+  return wide ? 12 : 8;
+}
+
+/* ---------- 牌の絵（SVG・外部画像なし） ---------- */
+var C_BLUE = '#12386b', C_RED = '#b3271f', C_GREEN = '#0f7a3d';
+var MINCHO = 'Hiragino Mincho ProN,Yu Mincho,Noto Serif JP,serif';
+var NUMK = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+
+var PIN_POS = {
+  1: [[.5, .5]],
+  2: [[.5, .32], [.5, .68]],
+  3: [[.28, .24], [.5, .5], [.72, .76]],
+  4: [[.3, .3], [.7, .3], [.3, .7], [.7, .7]],
+  5: [[.28, .26], [.72, .26], [.5, .5], [.28, .74], [.72, .74]],
+  6: [[.32, .22], [.68, .22], [.32, .5], [.68, .5], [.32, .78], [.68, .78]],
+  7: [[.26, .2], [.5, .26], [.74, .32], [.3, .62], [.7, .62], [.3, .84], [.7, .84]],
+  8: [[.32, .18], [.68, .18], [.32, .4], [.68, .4], [.32, .6], [.68, .6], [.32, .82], [.68, .82]],
+  9: [[.28, .22], [.5, .22], [.72, .22], [.28, .5], [.5, .5], [.72, .5], [.28, .78], [.5, .78], [.72, .78]]
+};
+
+var SOU_POS = {
+  1: [[.5, .5]],
+  2: [[.5, .3], [.5, .7]],
+  3: [[.5, .22], [.32, .68], [.68, .68]],
+  4: [[.32, .28], [.68, .28], [.32, .72], [.68, .72]],
+  5: [[.3, .24], [.7, .24], [.5, .5], [.3, .76], [.7, .76]],
+  6: [[.3, .22], [.7, .22], [.3, .5], [.7, .5], [.3, .78], [.7, .78]],
+  7: [[.5, .18], [.28, .52], [.5, .52], [.72, .52], [.28, .82], [.5, .82], [.72, .82]],
+  8: [[.3, .18], [.7, .18], [.3, .42], [.7, .42], [.3, .64], [.7, .64], [.3, .86], [.7, .86]],
+  9: [[.28, .22], [.5, .22], [.72, .22], [.28, .5], [.5, .5], [.72, .5], [.28, .78], [.5, .78], [.72, .78]]
+};
+
+function stick(cx, cy, col, h, w) {
+  h = h || 15; w = w || 5;
+  var x = cx - w / 2, y = cy - h / 2;
+  return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w + '" height="' + h + '" rx="2.2" fill="' + col + '"/>' +
+    '<rect x="' + (x - 1.6).toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + (w + 3.2) + '" height="2.3" rx="1.1" fill="' + col + '"/>' +
+    '<rect x="' + (x - 1.6).toFixed(1) + '" y="' + (y + h - 2.3).toFixed(1) + '" width="' + (w + 3.2) + '" height="2.3" rx="1.1" fill="' + col + '"/>';
+}
+
+function tileSVG(id) {
+  var k = KM[id];
+  if (!k) { return ''; }
+  var s = '', i, p, cx, cy, col, r;
+
+  if (k.suit === 'man') {
+    s += '<text x="30" y="35" text-anchor="middle" font-size="32" font-weight="700" fill="' + C_BLUE +
+      '" font-family="' + MINCHO + '">' + NUMK[k.num] + '</text>' +
+      '<text x="30" y="72" text-anchor="middle" font-size="32" font-weight="700" fill="' + C_RED +
+      '" font-family="' + MINCHO + '">萬</text>';
+
+  } else if (k.suit === 'pin') {
+    var pos = PIN_POS[k.num];
+    r = (k.num === 1) ? 13 : (k.num <= 4 ? 8 : (k.num <= 6 ? 7.4 : 6.4));
+    if (k.num === 1) {
+      s += '<circle cx="30" cy="40" r="15" fill="' + C_BLUE + '"/>' +
+        '<circle cx="30" cy="40" r="9" fill="#fdf8ea"/>' +
+        '<circle cx="30" cy="40" r="4.6" fill="' + C_RED + '"/>';
+    } else {
+      for (i = 0; i < pos.length; i++) {
+        cx = pos[i][0] * 60; cy = pos[i][1] * 80;
+        col = (i % 3 === 0) ? C_BLUE : (i % 3 === 1 ? C_GREEN : C_RED);
+        s += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + r + '" fill="' + col + '"/>' +
+          '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + (r * 0.42).toFixed(2) + '" fill="#fdf8ea"/>';
+      }
+    }
+
+  } else if (k.suit === 'sou') {
+    var sp = SOU_POS[k.num];
+    if (k.num === 1) {
+      s += stick(30, 40, C_GREEN, 40, 9);
+    } else {
+      for (i = 0; i < sp.length; i++) {
+        cx = sp[i][0] * 60; cy = sp[i][1] * 80;
+        col = C_GREEN;
+        if (k.num === 5 && i === 2) { col = C_RED; }
+        if (k.num === 7 && i === 0) { col = C_RED; }
+        s += stick(cx, cy, col);
+      }
+    }
+
+  } else {
+    var ch = k.name;
+    if (ch === '白') {
+      s += '<rect x="15" y="17" width="30" height="46" rx="4" fill="none" stroke="' + C_BLUE + '" stroke-width="3.6"/>' +
+        '<rect x="21.5" y="23.5" width="17" height="33" rx="2" fill="none" stroke="' + C_BLUE + '" stroke-width="2"/>';
+    } else {
+      col = (ch === '發') ? C_GREEN : (ch === '中') ? C_RED : C_BLUE;
+      s += '<text x="30" y="55" text-anchor="middle" font-size="42" font-weight="700" fill="' + col +
+        '" font-family="' + MINCHO + '">' + ch + '</text>';
+    }
+  }
+  return '<svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">' + s + '</svg>';
+}
+
+/* ---------- 盤面 ---------- */
+function buildBoard(total) {
+  var board = $('#board');
+  var cols = colsForTotal(total);
+  board.innerHTML = '';
+  board.style.gridTemplateColumns = 'repeat(' + cols + ',1fr)';
+  var frag = document.createDocumentFragment(), i, d;
+  for (i = 0; i < total; i++) {
+    d = document.createElement('div');
+    d.className = 'tile';
+    d.setAttribute('data-i', i);
+    d.innerHTML = '<div class="tile-inner"><div class="tile-back"></div><div class="tile-front"></div></div>';
+    frag.appendChild(d);
+  }
+  board.appendChild(frag);
+}
+
+function applyVM(vm) {
+  if (!vm) { return; }
+  var tiles = $('#board').children, i, el, mk, uk, k, up, mt;
+  for (i = 0; i < vm.total && i < tiles.length; i++) {
+    el = tiles[i];
+    mk = vm.matched[i]; uk = vm.up[i]; k = mk || uk;
+    if (k && el._k !== k) {
+      el.querySelector('.tile-front').innerHTML = tileSVG(k);
+      el._k = k;
+    }
+    up = !!k;
+    if (el.classList.contains('up') !== up) { el.classList.toggle('up', up); }
+    mt = !!mk;
+    if (el.classList.contains('matched') !== mt) { el.classList.toggle('matched', mt); }
+  }
+}
+
+function renderHUD(vm) {
+  if (!vm) { return; }
+  var wrap = $('#players');
+  if (wrap.childElementCount !== vm.names.length) {
+    wrap.innerHTML = '';
+    vm.names.forEach(function (n, i) {
+      var d = document.createElement('div');
+      d.className = 'pchip';
+      d.innerHTML = '<div class="pname"></div><div class="pscore">0<i>刻子</i></div>';
+      wrap.appendChild(d);
+    });
+  }
+  var kids = wrap.children;
+  vm.names.forEach(function (n, i) {
+    var el = kids[i];
+    el.querySelector('.pname').textContent = n;
+    el.querySelector('.pscore').innerHTML = vm.scores[i] + '<i>刻子</i>';
+    el.classList.toggle('active', i === vm.turn && !vm.over);
+  });
+
+  var who;
+  if (vm.over) { who = 'ゲーム終了'; }
+  else if (G.mode === 'solo') { who = 'あなたの番'; }
+  else if (G.online && vm.turn === G.myIndex) { who = 'あなたの番'; }
+  else { who = vm.names[vm.turn] + ' の番'; }
+  var left = (typeof vm.left === 'number') ? vm.left : 0;
+  $('#turn-label').textContent = who + '　・　残り' + left + '組';
+}
+
+function vmFromEngine(eng) {
+  var m = [], u = [], i;
+  for (i = 0; i < eng.total; i++) {
+    m[i] = eng.matched[i] ? eng.deck[i] : null;
+    u[i] = (!eng.matched[i] && eng.flipped.indexOf(i) >= 0) ? eng.deck[i] : null;
+  }
+  return {
+    total: eng.total, matched: m, up: u,
+    scores: eng.scores.slice(), turn: eng.turn, names: G.names,
+    over: eng.over, left: eng.tripletsLeft
+  };
+}
+
+function refresh() {
+  G.vm = vmFromEngine(G.engine);
+  applyVM(G.vm);
+  renderHUD(G.vm);
+  if (G.vm.over) { showResult(G.vm); }
+}
+
+/* ---------- 結果 ---------- */
+function showResult(vm) {
+  if (G.resultShown) { return; }
+  G.resultShown = true;
+  var arr = vm.names.map(function (n, i) { return { n: n, s: vm.scores[i] }; });
+  arr.sort(function (a, b) { return b.s - a.s; });
+  var max = arr.length ? arr[0].s : 0;
+  var html = '<ul class="rank">';
+  arr.forEach(function (p, i) {
+    html += '<li class="' + (p.s === max ? 'win' : '') + '">' +
+      '<span class="rk">' + (i + 1) + '</span>' +
+      '<span class="rn">' + p.n + '</span>' +
+      '<span class="rs">' + p.s + ' 刻子</span></li>';
+  });
+  html += '</ul>';
+  $('#ov-title').textContent = 'ゲーム終了';
+  $('#ov-body').innerHTML = html;
+  showOverlay();
+}
+
+/* ---------- ローカル（ひとり／同じ端末） ---------- */
+function startLocal(nPlayers, names) {
+  clearTimers();
+  hideOverlay();
+  G.online = false;
+  G.isHost = false;
+  G.mode = (nPlayers === 1) ? 'solo' : 'local';
+  G.names = names;
+  G.myIndex = 0;
+  G.lock = false;
+  G.resultShown = false;
+  G.started = true;
+  G.engine = new E.Engine({ nKinds: DIFFS[G.diff].nKinds, nPlayers: nPlayers });
+  buildBoard(G.engine.total);
+  showScreen('game');
+  refresh();
+}
+
+function onTileClick(i) {
+  if (G.lock) { return; }
+  if (G.online) { onlineFlip(i); return; }
+  localFlip(i);
+}
+
+function localFlip(i) {
+  var eng = G.engine;
+  if (!eng || eng.over) { return; }
+  var r = eng.flip(i);
+  if (r.type === 'ignore') { return; }
+
+  if (r.type === 'first' || r.type === 'second') { refresh(); return; }
+
+  if (r.type === 'match') {
+    G.lock = true;
+    refresh();
+    showToast('刻子成立！ 🀄');
+    later(function () {
+      G.lock = false;
+      refresh();
+    }, MATCH_DELAY);
+    return;
+  }
+
+  if (r.type === 'fail') {
+    G.lock = true;
+    refresh();
+    showToast(r.flips === 2 ? '柄が違います…' : '3枚目が違います…');
+    later(function () {
+      eng.resolve();
+      G.lock = false;
+      refresh();
+    }, FAIL_DELAY);
+  }
+}
+
+/* ---------- メニュー配線 ---------- */
+function initMenu() {
+  $all('#diff-seg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      $all('#diff-seg button').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active');
+      G.diff = b.getAttribute('data-diff');
+      $('#diff-info').textContent = DIFFS[G.diff].label;
+    });
+  });
+  $('#diff-info').textContent = DIFFS[G.diff].label;
+
+  $all('[data-mode]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var m = b.getAttribute('data-mode');
+      if (m === 'solo') { startLocal(1, ['あなた']); }
+      else if (m === 'local') { showScreen('players'); }
+      else { openLobby(); }
+    });
+  });
+
+  $all('#screen-players [data-count]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var n = parseInt(b.getAttribute('data-count'), 10);
+      var names = [];
+      for (var i = 1; i <= n; i++) { names.push('プレイヤー' + i); }
+      startLocal(n, names);
+    });
+  });
+
+  $all('[data-back]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (G.online) { leaveOnline(); }
+      showScreen(b.getAttribute('data-back'));
+    });
+  });
+
+  $('#board').addEventListener('click', function (ev) {
+    var t = ev.target.closest ? ev.target.closest('.tile') : null;
+    if (!t) { return; }
+    var i = parseInt(t.getAttribute('data-i'), 10);
+    if (!isNaN(i)) { onTileClick(i); }
+  });
+
+  $('#btn-quit').addEventListener('click', function () {
+    clearTimers();
+    if (G.online) { leaveOnline(); }
+    hideOverlay();
+    showScreen('menu');
+  });
+
+  $('#btn-restart').addEventListener('click', function () {
+    clearTimers();
+    hideOverlay();
+    G.resultShown = false;
+    if (G.online) { onlineRestart(); return; }
+    startLocal(G.engine ? G.engine.nPlayers : 1, G.names);
+  });
+
+  $('#ov-menu').addEventListener('click', function () {
+    clearTimers();
+    hideOverlay();
+    if (G.online) { leaveOnline(); }
+    showScreen('menu');
+  });
+
+  $('#ov-again').addEventListener('click', function () {
+    clearTimers();
+    hideOverlay();
+    G.resultShown = false;
+    if (G.online) { onlineRestart(); return; }
+    startLocal(G.engine ? G.engine.nPlayers : 1, G.names);
+  });
+
+  var onResize = function () {
+    if (G.engine && $('#screen-game').classList.contains('active')) {
+      $('#board').style.gridTemplateColumns = 'repeat(' + colsForTotal(G.engine.total) + ',1fr)';
+    }
+  };
+  window.addEventListener('resize', onResize);
+  window.addEventListener('orientationchange', function () { setTimeout(onResize, 250); });
+}
+
+</script>
+<script>
+/* ============================================================
+   オンライン対戦（PeerJS 公開ブローカー経由の P2P / ホスト権威型）
+   ホストが山札と手番の唯一の権威。ゲストは「めくる要求」だけを送る。
+   ============================================================ */
+'use strict';
+
+var PEER_PREFIX = 'mj3sn-';
+var CODE_CHARS = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+var peer = null;
+var seats = [];        // ホスト側のゲスト席 [{conn, name, dead}]
+var hostConn = null;   // ゲスト側の接続
+var myName = '';
+
+function genCode() {
+  var s = '', i;
+  for (i = 0; i < 4; i++) { s += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]; }
+  return s;
+}
+function setStatus(msg) { $('#lobby-status').textContent = msg || ''; }
+function getMyName() {
+  var v = ($('#inp-name').value || '').trim();
+  return v ? v.slice(0, 8) : 'プレイヤー';
+}
+/* 席番号 = seats 内の位置 + 1（0 はホスト固定） */
+function hostNames() {
+  return [myName].concat(seats.map(function (s) { return s.dead ? '（退出）' : s.name; }));
+}
+
+/* ---------- Peer 生成 ---------- */
+function destroyPeer() {
+  if (peer) { try { peer.destroy(); } catch (e) { /* noop */ } peer = null; }
+  seats = [];
+  hostConn = null;
+}
+function createPeer(id, onOpen, onError) {
+  if (typeof Peer === 'undefined') {
+    setStatus('通信ライブラリを読み込めませんでした。ネット接続を確認してください。');
+    return false;
+  }
+  destroyPeer();
+  try { peer = new Peer(id, { debug: 0 }); }
+  catch (e) { setStatus('接続を開始できませんでした: ' + e.message); return false; }
+  peer.on('open', function (pid) { onOpen(pid); });
+  peer.on('error', function (err) { onError(err); });
+  return true;
+}
+
+/* ---------- ロビー ---------- */
+function openLobby() {
+  G.online = true;
+  showScreen('lobby');
+  $('#lobby-choice').classList.remove('hidden');
+  $('#lobby-room').classList.add('hidden');
+  $('#lobby-wait').classList.add('hidden');
+  setStatus('');
+  var hash = (location.hash || '').replace('#room=', '').trim().toUpperCase();
+  if (/^[A-Z0-9]{4}$/.test(hash)) {
+    $('#inp-code').value = hash;
+    setStatus('ルームID「' + hash + '」を読み取りました。「参加」を押してください。');
+  }
+}
+function leaveOnline() {
+  destroyPeer();
+  G.online = false;
+  G.isHost = false;
+  G.started = false;
+  clearTimers();
+}
+
+/* ---------- ホスト ---------- */
+function startHost() {
+  myName = getMyName();
+  G.online = true;
+  G.isHost = true;
+  G.mode = 'online';
+  G.names = [myName];
+  G.myIndex = 0;
+  G.started = false;
+  G.resultShown = false;
+
+  showScreen('lobby');
+  $('#lobby-choice').classList.add('hidden');
+  $('#lobby-room').classList.remove('hidden');
+  $('#lobby-wait').classList.add('hidden');
+
+  var code = genCode();
+  G.code = code;
+  $('#room-code').textContent = code;
+  makeQR(code);
+  renderLobbyPlayers();
+  updateStartBtn();
+  setStatus('ルームを準備しています…');
+
+  createPeer(PEER_PREFIX + code, function () {
+    setStatus('');
+    peer.on('connection', onHostConnection);
+  }, function (err) {
+    if (err.type === 'unavailable-id') { setStatus('ルームIDが衝突しました。もう一度お試しください。'); }
+    else if (err.type === 'browser-incompatible') { setStatus('このブラウザは通信機能に対応していません。'); }
+    else if (err.type === 'network') { setStatus('ネットワークに接続できませんでした。'); }
+    else { setStatus('接続エラー: ' + err.type); }
+  });
+}
+
+function onHostConnection(conn) {
+  if (G.started || seats.length >= 3) {
+    try { conn.send(JSON.stringify({ t: 'toast', msg: '参加できませんでした（満員／開始済み）' })); } catch (e) { /* noop */ }
+    setTimeout(function () { try { conn.close(); } catch (e) { /* noop */ } }, 400);
+    return;
+  }
+  var entry = { conn: conn, name: 'ゲスト', dead: false };
+  seats.push(entry);
+
+  conn.on('data', function (d) { onHostData(entry, d); });
+  conn.on('close', function () { onGuestLeft(entry); });
+  conn.on('error', function () { /* noop */ });
+
+  renderLobbyPlayers();
+  updateStartBtn();
+  broadcastLobby();
+  try { conn.send(JSON.stringify({ t: 'welcome', you: seats.indexOf(entry) + 1, name: entry.name })); } catch (e) { /* noop */ }
+}
+
+function onGuestLeft(entry) {
+  if (G.started) {
+    entry.dead = true;
+    renderLobbyPlayers();
+    skipInactiveTurns();
+    broadcastState();
+    broadcast({ t: 'toast', msg: 'プレイヤーが退出しました' });
+  } else {
+    seats = seats.filter(function (s) { return s !== entry; });
+    renderLobbyPlayers();
+    updateStartBtn();
+    broadcastLobby();
+    // 席番号がずれたので各ゲストへ再通知
+    seats.forEach(function (s, i) {
+      try { s.conn.send(JSON.stringify({ t: 'welcome', you: i + 1, name: s.name })); } catch (e) { /* noop */ }
+    });
+  }
+}
+
+function onHostData(entry, d) {
+  if (!d || typeof d !== 'object') { return; }
+  if (d.t === 'hello') {
+    entry.name = (d.name || 'ゲスト').toString().slice(0, 8);
+    renderLobbyPlayers();
+    broadcastLobby();
+    return;
+  }
+  if (d.t === 'flip') {
+    if (!G.started || !G.engine || G.engine.over) { return; }
+    var seat = seats.indexOf(entry) + 1;
+    if (seat !== G.engine.turn) { return; }
+    hostFlip(d.i);
+    return;
+  }
+  if (d.t === 'again') {
+    if (G.started && G.isHost) { hostRestart(); }
+  }
+}
+
+function broadcast(msg) {
+  var s;
+  try { s = JSON.stringify(msg); } catch (e) { return; }
+  seats.forEach(function (seat) {
+    if (seat.dead) { return; }
+    try { seat.conn.send(s); } catch (e) { /* noop */ }
+  });
+}
+function broadcastLobby() { broadcast({ t: 'lobby', names: hostNames(), diff: G.diff }); }
+function broadcastState() {
+  if (!G.engine) { return; }
+  var v = vmFromEngine(G.engine);
+  applyVM(v);
+  renderHUD(v);
+  broadcast({
+    t: 'state', total: v.total, matched: v.matched, up: v.up,
+    scores: v.scores, turn: v.turn, names: v.names, over: v.over, left: v.left
+  });
+  if (v.over) { showResult(v); }
+}
+
+/* 退出したプレイヤーの手番を飛ばす */
+function skipInactiveTurns() {
+  if (!G.engine) { return; }
+  var guard = 0;
+  while (!G.engine.over && guard++ < 32) {
+    if (G.engine.pendingFail) { G.engine.resolve(); continue; }
+    var t = G.engine.turn;
+    if (t === 0) { break; }
+    if (!seats[t - 1] || !seats[t - 1].dead) { break; }
+    G.engine.turn = (G.engine.turn + 1) % G.engine.nPlayers;
+  }
+}
+
+function updateStartBtn() {
+  var btn = $('#btn-start');
+  btn.disabled = seats.length < 1;
+  $('#host-note').textContent = seats.length < 1
+    ? '参加者が来るのを待っています（2人以上で開始できます）。'
+    : (seats.length + 1) + '人で対戦します。';
+}
+
+function renderLobbyPlayers() {
+  var names = hostNames();
+  var html = names.map(function (n, i) {
+    return '<div class="lp"><span class="lp-i">' + (i + 1) + '</span>' + n +
+      (i === 0 ? ' <em>ホスト</em>' : '') + '</div>';
+  }).join('');
+  $('#lobby-players').innerHTML = html;
+  $('#join-players').innerHTML = html;
+  $('#lobby-count').textContent = names.length;
+  $('#join-count').textContent = names.length;
+}
+
+function makeQR(code) {
+  var box = $('#qr');
+  var base = location.href.split('#')[0];
+  var url = base + '#room=' + code;
+  box.innerHTML = '';
+  var img = document.createElement('img');
+  img.alt = 'ルーム ' + code;
+  img.onerror = function () { box.innerHTML = ''; };
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=0&data=' + encodeURIComponent(url);
+  box.appendChild(img);
+}
+
+function startHostGame() {
+  if (seats.length < 1) { setStatus('参加者を待っています。'); return; }
+  G.started = true;
+  G.resultShown = false;
+  clearTimers();
+  hideOverlay();
+  G.engine = new E.Engine({ nKinds: DIFFS[G.diff].nKinds, nPlayers: 1 + seats.length });
+  buildBoard(G.engine.total);
+  showScreen('game');
+  broadcast({ t: 'start', total: G.engine.total, names: hostNames(), diff: G.diff });
+  broadcastState();
+  broadcast({ t: 'toast', msg: 'ゲーム開始！' });
+}
+
+function hostFlip(i) {
+  var eng = G.engine;
+  if (!eng || eng.over || G.lock) { return; }
+  var r = eng.flip(i);
+  if (r.type === 'ignore') { return; }
+
+  if (r.type === 'first' || r.type === 'second') { broadcastState(); return; }
+
+  if (r.type === 'match') {
+    broadcastState();
+    broadcast({ t: 'toast', msg: '刻子成立！ 🀄' });
+    G.lock = true;
+    later(function () { G.lock = false; broadcastState(); }, MATCH_DELAY);
+    return;
+  }
+  if (r.type === 'fail') {
+    broadcastState();
+    broadcast({ t: 'toast', msg: r.flips === 2 ? '柄が違います…' : '3枚目が違います…' });
+    G.lock = true;
+    later(function () { eng.resolve(); G.lock = false; skipInactiveTurns(); broadcastState(); }, FAIL_DELAY);
+  }
+}
+
+function hostRestart() {
+  clearTimers();
+  hideOverlay();
+  G.resultShown = false;
+  G.engine = new E.Engine({ nKinds: DIFFS[G.diff].nKinds, nPlayers: 1 + seats.length });
+  buildBoard(G.engine.total);
+  showScreen('game');
+  broadcast({ t: 'start', total: G.engine.total, names: hostNames(), diff: G.diff });
+  broadcastState();
+  broadcast({ t: 'toast', msg: '新しいゲームを開始しました' });
+}
+
+/* ---------- ゲスト ---------- */
+function startJoin() {
+  myName = getMyName();
+  var code = ($('#inp-code').value || '').trim().toUpperCase();
+  if (!/^[A-Z0-9]{4}$/.test(code)) { setStatus('4文字のルームIDを入力してください。'); return; }
+
+  G.online = true;
+  G.isHost = false;
+  G.mode = 'online';
+  G.code = code;
+  G.started = false;
+  G.resultShown = false;
+
+  showScreen('lobby');
+  $('#lobby-choice').classList.add('hidden');
+  $('#lobby-room').classList.add('hidden');
+  $('#lobby-wait').classList.remove('hidden');
+  $('#join-players').innerHTML = '';
+  setStatus('ルーム「' + code + '」に接続しています…');
+
+  var ok = createPeer(null, function () {
+    hostConn = peer.connect(PEER_PREFIX + code, { reliable: true });
+    hostConn.on('open', function () {
+      setStatus('');
+      try { hostConn.send(JSON.stringify({ t: 'hello', name: myName })); } catch (e) { /* noop */ }
+    });
+    hostConn.on('data', onGuestData);
+    hostConn.on('close', function () { setStatus('接続が切れました。ホストが終了した可能性があります。'); });
+    hostConn.on('error', function (e) { setStatus('接続エラー: ' + e.type); });
+  }, function (err) {
+    if (err.type === 'peer-unavailable') {
+      setStatus('ルーム「' + code + '」が見つかりません。IDを確認してください。');
+    } else if (err.type === 'network') {
+      setStatus('ネットワークに接続できませんでした。');
+    } else {
+      setStatus('接続エラー: ' + err.type);
+    }
+  });
+  if (!ok) { return; }
+}
+
+function onGuestData(d) {
+  if (!d || typeof d !== 'object') { return; }
+  if (d.t === 'welcome') { G.myIndex = d.you; return; }
+  if (d.t === 'lobby') {
+    G.names = d.names || G.names;
+    renderLobbyPlayers();
+    setStatus('ホストの開始を待っています…');
+    return;
+  }
+  if (d.t === 'start') {
+    G.names = d.names || G.names;
+    G.started = true;
+    G.resultShown = false;
+    clearTimers();
+    hideOverlay();
+    buildBoard(d.total);
+    showScreen('game');
+    renderLobbyPlayers();
+    return;
+  }
+  if (d.t === 'state') {
+    applyVM(d);
+    renderHUD(d);
+    if (d.over) { showResult(d); }
+    return;
+  }
+  if (d.t === 'toast') { showToast(d.msg); return; }
+}
+
+function onlineFlip(i) {
+  if (G.lock) { return; }
+  if (!G.isHost) {
+    if (!G.started) { return; }
+    if (G.vm && G.vm.turn !== G.myIndex) { showToast('あなたの番ではありません'); return; }
+    if (hostConn && hostConn.open) { try { hostConn.send(JSON.stringify({ t: 'flip', i: i })); } catch (e) { /* noop */ } }
+    return;
+  }
+  hostFlip(i);
+}
+
+function onlineRestart() {
+  if (G.isHost) { hostRestart(); return; }
+  if (hostConn && hostConn.open) { try { hostConn.send(JSON.stringify({ t: 'again' })); } catch (e) { /* noop */ } }
+  showToast('ホストの再開始を待っています…');
+}
+
+/* ---------- ロビー操作の配線 ---------- */
+function initOnline() {
+  $('#btn-host').addEventListener('click', function () { startHost(); });
+  $('#btn-join').addEventListener('click', function () { startJoin(); });
+  $('#btn-start').addEventListener('click', function () { startHostGame(); });
+  $('#inp-code').addEventListener('input', function (e) {
+    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
+  });
+  $('#inp-code').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { startJoin(); }
+  });
+  var saved = '';
+  try { saved = localStorage.getItem('mj3_name') || ''; } catch (e) { saved = ''; }
+  if (saved) { $('#inp-name').value = saved; }
+  $('#inp-name').addEventListener('change', function () {
+    try { localStorage.setItem('mj3_name', $('#inp-name').value.slice(0, 8)); } catch (e) { /* noop */ }
+  });
+}
+
+/* ---------- 起動 ---------- */
+initMenu();
+initOnline();
+
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>
