@@ -1103,7 +1103,7 @@ function onGuestLeft(entry) {
 }
 
 function onHostData(entry, d) {
-    // JSON文字列で届いた場合はオブジェクトに変換
+  // JSON文字列をオブジェクトに変換
   if (typeof d === 'string') {
     try {
       d = JSON.parse(d);
@@ -1114,13 +1114,14 @@ function onHostData(entry, d) {
   }
 
   if (!d || typeof d !== 'object') { return; }
-  if (!d || typeof d !== 'object') { return; }
+
   if (d.t === 'hello') {
     entry.name = (d.name || 'ゲスト').toString().slice(0, 8);
     renderLobbyPlayers();
     broadcastLobby();
     return;
   }
+
   if (d.t === 'flip') {
     if (!G.started || !G.engine || G.engine.over) { return; }
     var seat = seats.indexOf(entry) + 1;
@@ -1128,6 +1129,7 @@ function onHostData(entry, d) {
     hostFlip(d.i);
     return;
   }
+
   if (d.t === 'again') {
     if (G.started && G.isHost) { hostRestart(); }
   }
@@ -1290,7 +1292,7 @@ function startJoin() {
 }
 
 function onGuestData(d) {
-  // JSON文字列で届いた場合はオブジェクトに変換
+  // JSON文字列をオブジェクトに変換
   if (typeof d === 'string') {
     try {
       d = JSON.parse(d);
@@ -1301,14 +1303,19 @@ function onGuestData(d) {
   }
 
   if (!d || typeof d !== 'object') { return; }
-  if (!d || typeof d !== 'object') { return; }
-  if (d.t === 'welcome') { G.myIndex = d.you; return; }
+
+  if (d.t === 'welcome') {
+    G.myIndex = d.you;
+    return;
+  }
+
   if (d.t === 'lobby') {
     G.names = d.names || G.names;
     renderLobbyPlayers();
     setStatus('ホストの開始を待っています…');
     return;
   }
+
   if (d.t === 'start') {
     G.names = d.names || G.names;
     G.started = true;
@@ -1320,13 +1327,18 @@ function onGuestData(d) {
     renderLobbyPlayers();
     return;
   }
+
   if (d.t === 'state') {
     applyVM(d);
     renderHUD(d);
     if (d.over) { showResult(d); }
     return;
   }
-  if (d.t === 'toast') { showToast(d.msg); return; }
+
+  if (d.t === 'toast') {
+    showToast(d.msg);
+    return;
+  }
 }
 
 function onlineFlip(i) {
