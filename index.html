@@ -1181,11 +1181,22 @@ function updateStartBtn() {
 }
 
 function renderLobbyPlayers() {
-  var names = hostNames();
+  var names;
+
+  if (G.isHost) {
+    names = hostNames();
+  } else {
+    names = Array.isArray(G.names) && G.names.length
+      ? G.names
+      : [myName || 'プレイヤー'];
+  }
+
   var html = names.map(function (n, i) {
-    return '<div class="lp"><span class="lp-i">' + (i + 1) + '</span>' + n +
+    return '<div class="lp"><span class="lp-i">' + (i + 1) + '</span>' +
+      (n || 'プレイヤー') +
       (i === 0 ? ' <em>ホスト</em>' : '') + '</div>';
   }).join('');
+
   $('#lobby-players').innerHTML = html;
   $('#join-players').innerHTML = html;
   $('#lobby-count').textContent = names.length;
