@@ -1164,6 +1164,14 @@ function onHostData(entry, d) {
   if (d.t === 'flip') {
     if (!G.started || !G.engine || G.engine.over) { return; }
     var seat = seats.indexOf(entry) + 1;
+
+      console.log('[DEBUG] ホスト受信判定:', {
+    message: d.t,
+    seat: seat,
+    engineTurn: G.engine.turn,
+    started: G.started
+  });
+      
     if (seat !== G.engine.turn) { return; }
     hostFlip(d.i);
     return;
@@ -1365,7 +1373,11 @@ function onGuestData(d) {
   }
   if (!d || typeof d !== 'object') return;
 
-  if (d.t === 'welcome') { G.myIndex = d.you; return; }
+  if (d.t === 'welcome') {
+    G.myIndex = Number(d.you);
+    console.log('[DEBUG] ゲスト席番号:', G.myIndex);
+    return;
+  }
   if (d.t === 'lobby') {
     G.names = d.names || G.names;
     renderLobbyPlayers();
@@ -1402,6 +1414,14 @@ function onlineFlip(i) {
     ? (G.engine ? G.engine.turn : -1)
     : (G.vm ? G.vm.turn : -1);
 
+  console.log('[DEBUG] ゲスト操作判定:', {
+    isHost: G.isHost,
+    myIndex: G.myIndex,
+    currentTurn: currentTurn,
+    vmTurn: G.vm ? G.vm.turn : null,
+    connectionOpen: hostConn ? hostConn.open : false
+  });
+    
   if (currentTurn !== G.myIndex) {
     showToast('あなたの番ではありません');
     return;
