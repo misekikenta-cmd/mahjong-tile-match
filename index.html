@@ -599,27 +599,15 @@ var G = {
 
 /* ---------- helpers ---------- */
 function $(s) { return document.querySelector(s); }
-
-function $all(s) {
-  return Array.prototype.slice.call(document.querySelectorAll(s));
-}
-
-function later(fn, ms) {
-  var id = setTimeout(fn, ms);
-  G.timers.push(id);
-  return id;
-}
-
-function clearTimers() {
-  G.timers.forEach(clearTimeout);
-  G.timers = [];
-}
-
+function $all(s) { return Array.prototype.slice.call(document.querySelectorAll(s)); }
+function later(fn, ms) { var id = setTimeout(fn, ms); G.timers.push(id); return id; }
+function clearTimers() { G.timers.forEach(clearTimeout); G.timers = []; }
 function showScreen(name) {
-  $all('.screen').forEach(function(el) {
-    el.classList.remove('active');
-});
-  
+  $all('.screen').forEach(function (el) { el.classList.remove('active'); });
+  var el = $('#screen-' + name);
+  if (el) { el.classList.add('active'); }
+  if (name !== 'game') { window.scrollTo(0, 0); }
+}
 function showToast(msg, ms) {
   var t = $('#toast');
   t.textContent = msg;
