@@ -1103,6 +1103,15 @@ function onGuestLeft(entry) {
 }
 
 function onHostData(entry, d) {
+  if (typeof d === 'string') {
+    try {
+      d = JSON.parse(d);
+    } catch (e) {
+      console.error('ホスト側の受信データ解析エラー:', e);
+      return;
+    }
+  }
+
   if (!d || typeof d !== 'object') { return; }
   if (d.t === 'hello') {
     entry.name = (d.name || 'ゲスト').toString().slice(0, 8);
@@ -1130,7 +1139,14 @@ function broadcast(msg) {
     try { seat.conn.send(s); } catch (e) { /* noop */ }
   });
 }
-function broadcastLobby() { broadcast({ t: 'lobby', names: hostNames(), diff: G.diff }); }
+function broadcastLobby() {
+  G.names = hostNames();
+  broadcast({
+    t: 'lobby',
+    names: G.names,
+    diff: G.diff
+  });
+}
 function broadcastState() {
   if (!G.engine) { return; }
   var v = vmFromEngine(G.engine);
@@ -1194,7 +1210,12 @@ function startHostGame() {
   G.resultShown = false;
   clearTimers();
   hideOverlay();
-  G.engine = new E.Engine({ nKinds: DIFFS[G.diff].nKinds, nPlayers: 1 + seats.length });
+  G.names = hostNames();
+
+G.engine = new E.Engine({
+  nKinds: DIFFS[G.diff].nKinds,
+  nPlayers: 1 + seats.length
+});
   buildBoard(G.engine.total);
   showScreen('game');
   broadcast({ t: 'start', total: G.engine.total, names: hostNames(), diff: G.diff });
@@ -1285,7 +1306,7 @@ function onGuestData(d) {
     try {
       d = JSON.parse(d);
     } catch (e) {
-      console.error('受信データの解析に失敗:', e);
+      console.error('ゲスト側の受信データ解析エラー:', e);
       return;
     }
   }
