@@ -448,18 +448,18 @@ body{
   var KINDS = [];
   var KIND_MAP = {};
 
-  (build() {
+  (function build() {
     var i;
     for (i = 1; i <= 9; i++) { KINDS.push({ id: 'm' + i, suit: 'man', num: i, name: KANJI[i - 1] + '萬' }); }
     for (i = 1; i <= 9; i++) { KINDS.push({ id: 'p' + i, suit: 'pin', num: i, name: i + '筒' }); }
     for (i = 1; i <= 9; i++) { KINDS.push({ id: 's' + i, suit: 'sou', num: i, name: i + '索' }); }
-    ['東', '南', '西', '北', '白', '發', '中'].forEach((c, j) {
+    ['東', '南', '西', '北', '白', '發', '中'].forEach(function (c, j) {
       KINDS.push({ id: 'z' + j, suit: 'honor', num: j, name: c });
     });
-    KINDS.forEach((k) { KIND_MAP[k.id] = k; });
+    KINDS.forEach(function (k) { KIND_MAP[k.id] = k; });
   })();
 
-  shuffle(a, rnd) {
+  function shuffle(a, rnd) {
     rnd = rnd || Math.random;
     for (var i = a.length - 1; i > 0; i--) {
       var j = Math.floor(rnd() * (i + 1));
@@ -468,16 +468,16 @@ body{
     return a;
   }
 
-  pickKinds(n, rnd) { return shuffle(KINDS.slice(), rnd).slice(0, n); }
+  function pickKinds(n, rnd) { return shuffle(KINDS.slice(), rnd).slice(0, n); }
 
-  buildDeck(kinds, rnd) {
+  function buildDeck(kinds, rnd) {
     var deck = [];
-    kinds.forEach((k) { for (var c = 0; c < COPIES; c++) { deck.push(k.id); } });
+    kinds.forEach(function (k) { for (var c = 0; c < COPIES; c++) { deck.push(k.id); } });
     return shuffle(deck, rnd);
   }
 
   /* ---------------- Engine ---------------- */
-  Engine(opts) {
+  function Engine(opts) {
     opts = opts || {};
     this.rnd = opts.rnd || Math.random;
     this.nPlayers = Math.max(1, opts.nPlayers || 1);
@@ -485,8 +485,8 @@ body{
     if (opts.deck) {
       this.deck = opts.deck.slice();
       var seen = {}, ids = [];
-      this.deck.forEach((id) { if (!seen[id]) { seen[id] = 1; ids.push(id); } });
-      this.kindList = ids.map((id) { return KIND_MAP[id] || { id: id, suit: 'man', num: 1, name: id }; });
+      this.deck.forEach(function (id) { if (!seen[id]) { seen[id] = 1; ids.push(id); } });
+      this.kindList = ids.map(function (id) { return KIND_MAP[id] || { id: id, suit: 'man', num: 1, name: id }; });
     } else {
       this.kindList = opts.kinds || pickKinds(opts.nKinds || 8, this.rnd);
       this.deck = buildDeck(this.kindList, this.rnd);
@@ -505,7 +505,7 @@ body{
 
   /* 1枚めくる。戻り値の type:
      first / second / match / fail / ignore */
-  Engine.prototype.flip = (i) {
+  Engine.prototype.flip = function (i) {
     if (this.over) return { type: 'ignore', reason: 'over' };
     if (this.pendingFail) return { type: 'ignore', reason: 'resolving' };
     if (typeof i !== 'number' || i < 0 || i >= this.total) return { type: 'ignore', reason: 'range' };
@@ -530,7 +530,7 @@ body{
     /* 3枚そろった＝刻子成立 */
     var idxs = this.flipped.slice();
     var self = this;
-    idxs.forEach((k) { self.matched[k] = true; });
+    idxs.forEach(function (k) { self.matched[k] = true; });
     this.scores[this.turn] += 1;
     this.matchCount += 1;
     this.tripletsLeft -= 1;
@@ -540,7 +540,7 @@ body{
   };
 
   /* 失敗した牌を伏せて手番を次へ（演出後に呼ぶ） */
-  Engine.prototype.resolve = () {
+  Engine.prototype.resolve = function () {
     if (!this.pendingFail) return null;
     var idx = this.pendingFail;
     this.pendingFail = null;
@@ -598,27 +598,27 @@ var G = {
 };
 
 /* ---------- helpers ---------- */
-$(s) { return document.querySelector(s); }
-$all(s) { return Array.prototype.slice.call(document.querySelectorAll(s)); }
-later(fn, ms) { var id = setTimeout(fn, ms); G.timers.push(id); return id; }
-clearTimers() { G.timers.forEach(clearTimeout); G.timers = []; }
-showScreen(name) {
-  $all('.screen').forEach((el) { el.classList.remove('active'); });
+function $(s) { return document.querySelector(s); }
+function $all(s) { return Array.prototype.slice.call(document.querySelectorAll(s)); }
+function later(fn, ms) { var id = setTimeout(fn, ms); G.timers.push(id); return id; }
+function clearTimers() { G.timers.forEach(clearTimeout); G.timers = []; }
+function showScreen(name) {
+  $all('.screen').forEach(function (el) { el.classList.remove('active'); });
   var el = $('#screen-' + name);
   if (el) { el.classList.add('active'); }
   if (name !== 'game') { window.scrollTo(0, 0); }
 }
-showToast(msg, ms) {
+function showToast(msg, ms) {
   var t = $('#toast');
   t.textContent = msg;
   t.classList.remove('hidden');
   clearTimeout(t._tid);
-  t._tid = setTimeout(() { t.classList.add('hidden'); }, ms || TOAST_MS);
+  t._tid = setTimeout(function () { t.classList.add('hidden'); }, ms || TOAST_MS);
 }
-showOverlay() { $('#overlay').classList.remove('hidden'); }
-hideOverlay() { $('#overlay').classList.add('hidden'); }
+function showOverlay() { $('#overlay').classList.remove('hidden'); }
+function hideOverlay() { $('#overlay').classList.add('hidden'); }
 
-colsForTotal(total) {
+function colsForTotal(total) {
   var wide = window.innerWidth >= 640;
   if (total <= 24) { return wide ? 8 : 6; }
   if (total <= 36) { return wide ? 9 : 6; }
@@ -654,7 +654,7 @@ var SOU_POS = {
   9: [[.28, .22], [.5, .22], [.72, .22], [.28, .5], [.5, .5], [.72, .5], [.28, .78], [.5, .78], [.72, .78]]
 };
 
-stick(cx, cy, col, h, w) {
+function stick(cx, cy, col, h, w) {
   h = h || 15; w = w || 5;
   var x = cx - w / 2, y = cy - h / 2;
   return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w + '" height="' + h + '" rx="2.2" fill="' + col + '"/>' +
@@ -662,7 +662,7 @@ stick(cx, cy, col, h, w) {
     '<rect x="' + (x - 1.6).toFixed(1) + '" y="' + (y + h - 2.3).toFixed(1) + '" width="' + (w + 3.2) + '" height="2.3" rx="1.1" fill="' + col + '"/>';
 }
 
-tileSVG(id) {
+function tileSVG(id) {
   var k = KM[id];
   if (!k) { return ''; }
   var s = '', i, p, cx, cy, col, r;
@@ -718,7 +718,7 @@ tileSVG(id) {
 }
 
 /* ---------- 盤面 ---------- */
-buildBoard(total) {
+function buildBoard(total) {
   var board = $('#board');
   var cols = colsForTotal(total);
   board.innerHTML = '';
@@ -734,7 +734,7 @@ buildBoard(total) {
   board.appendChild(frag);
 }
 
-applyVM(vm) {
+function applyVM(vm) {
   if (!vm) { return; }
   var tiles = $('#board').children, i, el, mk, uk, k, up, mt;
   for (i = 0; i < vm.total && i < tiles.length; i++) {
@@ -751,12 +751,12 @@ applyVM(vm) {
   }
 }
 
-renderHUD(vm) {
+function renderHUD(vm) {
   if (!vm) { return; }
   var wrap = $('#players');
   if (wrap.childElementCount !== vm.names.length) {
     wrap.innerHTML = '';
-    vm.names.forEach((n, i) {
+    vm.names.forEach(function (n, i) {
       var d = document.createElement('div');
       d.className = 'pchip';
       d.innerHTML = '<div class="pname"></div><div class="pscore">0<i>刻子</i></div>';
@@ -764,7 +764,7 @@ renderHUD(vm) {
     });
   }
   var kids = wrap.children;
-  vm.names.forEach((n, i) {
+  vm.names.forEach(function (n, i) {
     var el = kids[i];
     el.querySelector('.pname').textContent = n;
     el.querySelector('.pscore').innerHTML = vm.scores[i] + '<i>刻子</i>';
@@ -780,7 +780,7 @@ renderHUD(vm) {
   $('#turn-label').textContent = who + '　・　残り' + left + '組';
 }
 
-vmFromEngine(eng) {
+function vmFromEngine(eng) {
   var m = [], u = [], i;
   for (i = 0; i < eng.total; i++) {
     m[i] = eng.matched[i] ? eng.deck[i] : null;
@@ -793,7 +793,7 @@ vmFromEngine(eng) {
   };
 }
 
-refresh() {
+function refresh() {
   G.vm = vmFromEngine(G.engine);
   applyVM(G.vm);
   renderHUD(G.vm);
@@ -801,14 +801,14 @@ refresh() {
 }
 
 /* ---------- 結果 ---------- */
-showResult(vm) {
+function showResult(vm) {
   if (G.resultShown) { return; }
   G.resultShown = true;
-  var arr = vm.names.map((n, i) { return { n: n, s: vm.scores[i] }; });
-  arr.sort((a, b) { return b.s - a.s; });
+  var arr = vm.names.map(function (n, i) { return { n: n, s: vm.scores[i] }; });
+  arr.sort(function (a, b) { return b.s - a.s; });
   var max = arr.length ? arr[0].s : 0;
   var html = '<ul class="rank">';
-  arr.forEach((p, i) {
+  arr.forEach(function (p, i) {
     html += '<li class="' + (p.s === max ? 'win' : '') + '">' +
       '<span class="rk">' + (i + 1) + '</span>' +
       '<span class="rn">' + p.n + '</span>' +
@@ -821,7 +821,7 @@ showResult(vm) {
 }
 
 /* ---------- ローカル（ひとり／同じ端末） ---------- */
-startLocal(nPlayers, names) {
+function startLocal(nPlayers, names) {
   clearTimers();
   hideOverlay();
   G.online = false;
@@ -1103,25 +1103,13 @@ function onGuestLeft(entry) {
 }
 
 function onHostData(entry, d) {
-  // JSON文字列をオブジェクトに変換
-  if (typeof d === 'string') {
-    try {
-      d = JSON.parse(d);
-    } catch (e) {
-      console.error('ホスト側の受信データ解析エラー:', e);
-      return;
-    }
-  }
-
   if (!d || typeof d !== 'object') { return; }
-
   if (d.t === 'hello') {
     entry.name = (d.name || 'ゲスト').toString().slice(0, 8);
     renderLobbyPlayers();
     broadcastLobby();
     return;
   }
-
   if (d.t === 'flip') {
     if (!G.started || !G.engine || G.engine.over) { return; }
     var seat = seats.indexOf(entry) + 1;
@@ -1129,7 +1117,6 @@ function onHostData(entry, d) {
     hostFlip(d.i);
     return;
   }
-
   if (d.t === 'again') {
     if (G.started && G.isHost) { hostRestart(); }
   }
@@ -1292,30 +1279,14 @@ function startJoin() {
 }
 
 function onGuestData(d) {
-  // JSON文字列をオブジェクトに変換
-  if (typeof d === 'string') {
-    try {
-      d = JSON.parse(d);
-    } catch (e) {
-      console.error('ゲスト側の受信データ解析エラー:', e);
-      return;
-    }
-  }
-
   if (!d || typeof d !== 'object') { return; }
-
-  if (d.t === 'welcome') {
-    G.myIndex = d.you;
-    return;
-  }
-
+  if (d.t === 'welcome') { G.myIndex = d.you; return; }
   if (d.t === 'lobby') {
     G.names = d.names || G.names;
     renderLobbyPlayers();
     setStatus('ホストの開始を待っています…');
     return;
   }
-
   if (d.t === 'start') {
     G.names = d.names || G.names;
     G.started = true;
@@ -1327,18 +1298,13 @@ function onGuestData(d) {
     renderLobbyPlayers();
     return;
   }
-
   if (d.t === 'state') {
     applyVM(d);
     renderHUD(d);
     if (d.over) { showResult(d); }
     return;
   }
-
-  if (d.t === 'toast') {
-    showToast(d.msg);
-    return;
-  }
+  if (d.t === 'toast') { showToast(d.msg); return; }
 }
 
 function onlineFlip(i) {
