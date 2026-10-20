@@ -1279,6 +1279,8 @@ function startJoin() {
 }
 
 function onGuestData(d) {
+  console.log('[DEBUG] onGuestData received:', d);
+  
   if (typeof d === 'string') {
     try {
       d = JSON.parse(d);
