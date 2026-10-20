@@ -1113,6 +1113,7 @@ function onHostData(entry, d) {
   }
 
   if (!d || typeof d !== 'object') { return; }
+  
   if (d.t === 'hello') {
     entry.name = (d.name || 'ゲスト').toString().slice(0, 8);
     renderLobbyPlayers();
