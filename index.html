@@ -1279,7 +1279,17 @@ function startJoin() {
 }
 
 function onGuestData(d) {
+  if (typeof d === 'string') {
+    try {
+      d = JSON.parse(d);
+    } catch (e) {
+      console.error('受信データの解析に失敗:', e);
+      return;
+    }
+  }
+
   if (!d || typeof d !== 'object') { return; }
+
   if (d.t === 'welcome') { G.myIndex = d.you; return; }
   if (d.t === 'lobby') {
     G.names = d.names || G.names;
