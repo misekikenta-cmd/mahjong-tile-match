@@ -1107,12 +1107,11 @@ function onHostData(entry, d) {
     try {
       d = JSON.parse(d);
     } catch (e) {
-      console.error('ホスト側の受信データ解析エラー:', e);
+      console.error('受信データ解析エラー:', e);
       return;
     }
   }
-
-  if (!d || typeof d !== 'object') { return; }
+  if (!d || typeof d !== 'object') return;
   
   if (d.t === 'hello') {
     entry.name = (d.name || 'ゲスト').toString().slice(0, 8);
@@ -1307,12 +1306,11 @@ function onGuestData(d) {
     try {
       d = JSON.parse(d);
     } catch (e) {
-      console.error('ゲスト側の受信データ解析エラー:', e);
+      console.error('受信データ解析エラー:', e);
       return;
     }
   }
-
-  if (!d || typeof d !== 'object') { return; }
+  if (!d || typeof d !== 'object') return;
 
   if (d.t === 'welcome') { G.myIndex = d.you; return; }
   if (d.t === 'lobby') {
@@ -1333,9 +1331,11 @@ function onGuestData(d) {
     return;
   }
   if (d.t === 'state') {
+    G.vm = d;
+    G.names = d.names || G.names;
     applyVM(d);
     renderHUD(d);
-    if (d.over) { showResult(d); }
+    if (d.over) showResult(d);
     return;
   }
   if (d.t === 'toast') { showToast(d.msg); return; }
