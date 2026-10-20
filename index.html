@@ -1066,21 +1066,63 @@ function startHost() {
 
 function onHostConnection(conn) {
   if (G.started || seats.length >= 3) {
-    try { conn.send(JSON.stringify({ t: 'toast', msg: '参加できませんでした（満員／開始済み）' })); } catch (e) { /* noop */ }
-    setTimeout(function () { try { conn.close(); } catch (e) { /* noop */ } }, 400);
+    try {
+      conn.send(JSON.stringify({
+        t: 'toast',
+        msg: '参加できませんでした（満員／開始済み）'
+      }));
+    } catch (e) {}
+    setTimeout(function () {
+      try { conn.close(); } catch (e) {}
+    }, 400);
     return;
   }
+
   var entry = { conn: conn, name: 'ゲスト', dead: false };
   seats.push(entry);
 
-  conn.on('data', function (d) { onHostData(entry, d); });
-  conn.on('close', function () { onGuestLeft(entry); });
-  conn.on('error', function () { /* noop */ });
+  conn.on('data', function (d) {
+    onHostData(entry, d);
+  });
+
+  conn.on('close', function () {
+    onGuestLeft(entry);
+  });
+
+  conn.on('error', function (e) {
+    console.error('[HOST] ゲスト接続エラー:', e);
+  });
 
   renderLobbyPlayers();
   updateStartBtn();
-  broadcastLobby();
-  try { conn.send(JSON.stringify({ t: 'welcome', you: seats.indexOf(entry) + 1, name: entry.name })); } catch (e) { /* noop */ }
+
+  // 接続が開いてからロビー情報を送信する
+  var initialized = false;
+
+  function onOpen() {
+    if (initialized) return;
+    initialized = true;
+
+    console.log('[HOST] ゲスト接続が開きました');
+
+    broadcastLobby();
+
+    try {
+      conn.send(JSON.stringify({
+        t: 'welcome',
+        you: seats.indexOf(entry) + 1,
+        name: entry.name
+      }));
+    } catch (e) {
+      console.error('[HOST] welcome送信エラー:', e);
+    }
+  }
+
+  if (conn.open) {
+    onOpen();
+  } else {
+    conn.on('open', onOpen);
+  }
 }
 
 function onGuestLeft(entry) {
