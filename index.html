@@ -1320,13 +1320,27 @@ function onGuestData(d) {
 }
 
 function onlineFlip(i) {
-  if (G.lock) { return; }
-  if (!G.isHost) {
-    if (!G.started) { return; }
-    if (G.vm && G.vm.turn !== G.myIndex) { showToast('あなたの番ではありません'); return; }
-    if (hostConn && hostConn.open) { try { hostConn.send(JSON.stringify({ t: 'flip', i: i })); } catch (e) { /* noop */ } }
+  if (G.lock || !G.started) { return; }
+
+  // ホスト・ゲスト共通で手番を確認
+  var currentTurn = G.isHost
+    ? (G.engine ? G.engine.turn : -1)
+    : (G.vm ? G.vm.turn : -1);
+
+  if (currentTurn !== G.myIndex) {
+    showToast('あなたの番ではありません');
     return;
   }
+
+  if (!G.isHost) {
+    if (hostConn && hostConn.open) {
+      try {
+        hostConn.send(JSON.stringify({ t: 'flip', i: i }));
+      } catch (e) { /* noop */ }
+    }
+    return;
+  }
+
   hostFlip(i);
 }
 
